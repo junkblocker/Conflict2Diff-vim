@@ -1,17 +1,19 @@
 " Plugin to turn a CVS conflict file into a set of diff'ed files
 " with mappings to simplify the merging
-" 
-" Version: 1.1
-" Last Changed: 07 Jul 2003
+"
+" Version: 1.1a
+" Fix by: Manpreet Singh <junkblocker@yahoo.com>
+" Last Changed: Sep  4 2013 03:51 PM PDT
 "
 " Maintainer: Chris Rimmer <c@24.org.uk>
 
 let s:save_cpo = &cpo
 set cpo&vim
 
-if exists("loaded_conf2dif")
+if exists("g:loaded_conf2dif")
   finish
 endif
+let g:loaded_conf2dif=1
 
 let s:starts = "<<<<<<<"
 let s:middle = "======="
@@ -27,7 +29,7 @@ function s:FilterConf(which) range
   while linenum <= lastline
     execute linenum
     let line = getline(".")
-    
+
     let newline = ""
     if line =~ "^".s:starts
       let switch = (a:which == 0)
@@ -43,8 +45,8 @@ function s:FilterConf(which) range
       endif
     else
       let newline = line
-    endif    
-    
+    endif
+
     if (newline == "" && line != "") || switch == 0
       normal dd
       let lastline = lastline - 1
@@ -52,7 +54,7 @@ function s:FilterConf(which) range
       if newline != line
         call setline(".", newline)
       endif
-      let linenum = linenum + 1  
+      let linenum = linenum + 1
     endif
   endwhile
 endfunction
@@ -79,7 +81,7 @@ function s:GetLeft()
     return
   endif
   execute "diffget ".s:conf2dif_left
-  diffupdate 
+  diffupdate
 endfunction
 
 function s:GetRight()
@@ -88,11 +90,11 @@ function s:GetRight()
   endif
   call s:GotoOriginal()
   execute "diffget ".s:conf2dif_right
-  diffupdate 
+  diffupdate
 endfunction
 
 function s:Finish()
-  if s:conf2dif_orig == "" 
+  if s:conf2dif_orig == ""
     return
   endif
   call s:GotoOriginal()
@@ -106,14 +108,14 @@ function s:Finish()
 endfunction
 
 function s:Conflict2Diff()
-  if s:conf2dif_orig != "" 
+  if s:conf2dif_orig != ""
     return
   endif
   let s:conf2dif_orig = bufnr("%")
   let temp_a = @a
   %yank a
   %call s:FilterConf(2)
-  if s:conflict == 0 
+  if s:conflict == 0
     execute 0
     echoerr "This doesn't seem to be a CVS Conflict File!"
     let s:conf2dif_orig = ""
@@ -129,26 +131,26 @@ function s:Conflict2Diff()
   call s:GotoOriginal()
   diffthis
   execute 0
-  nmap <buffer> <C-Left> :Conflict2DiffGetLeft<CR>
-  nmap <buffer> <C-Right> :Conflict2DiffGetRight<CR>
-  nmap <buffer> <C-Up> [cz.
-  nmap <buffer> <C-Down> ]cz.
-  nmap <buffer> <C-q> :Conflict2DiffFinish<CR>
+  "nmap <buffer> <C-Left> :Conflict2DiffGetLeft<CR>
+  "nmap <buffer> <C-Right> :Conflict2DiffGetRight<CR>
+  "nmap <buffer> <C-Up> [cz.
+  "nmap <buffer> <C-Down> ]cz.
+  "nmap <buffer> <C-q> :Conflict2DiffFinish<CR>
   call s:MenusDuring()
   normal ]c
   let @a = temp_a
 endfunction
 
 function s:MenusBefore()
-  nmenu enable Plugin.CVS\ Conflict.Resolve 
-  nmenu disable Plugin.CVS\ Conflict.Use\ Left 
+  nmenu enable Plugin.CVS\ Conflict.Resolve
+  nmenu disable Plugin.CVS\ Conflict.Use\ Left
   nmenu disable Plugin.CVS\ Conflict.Use\ Right
   nmenu disable Plugin.CVS\ Conflict.Finish
 endfunction
 
 function s:MenusDuring()
   nmenu disable Plugin.CVS\ Conflict.Resolve
-  nmenu enable Plugin.CVS\ Conflict.Use\ Left 
+  nmenu enable Plugin.CVS\ Conflict.Use\ Left
   nmenu enable Plugin.CVS\ Conflict.Use\ Right
   nmenu enable Plugin.CVS\ Conflict.Finish
 endfunction
